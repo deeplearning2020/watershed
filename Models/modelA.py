@@ -35,12 +35,12 @@ class CoordAtt(nn.Module):
 
         #mip = max(8, inp // reduction)
 
-        self.conv1 = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2d(inp, inp//2, kernel_size=1, stride=1, padding=0)
         self.bn1 = nn.BatchNorm2d(oup)
         self.act = h_swish()
         
-        self.conv_h = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
-        self.conv_w = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_h = nn.Conv2d(inp//2, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_w = nn.Conv2d(inp//2, oup, kernel_size=1, stride=1, padding=0)
         
 
     def forward(self, x):
