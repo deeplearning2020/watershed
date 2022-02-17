@@ -88,7 +88,7 @@ class modelA(nn.Module):
         self.fc = nn.Linear(16*sz*sz, self.embed_dim)
 
     def forward_rep(self, x):
-        out = F.relu(self.conv1(self.cord1(self.bn1(x))))
+        out = F.relu(self.cord1(self.conv1(self.bn1(x))))
         out = F.relu(self.conv2(self.bn2(out)))
         out = F.relu(self.conv3(self.bn3(out)))
         out = F.relu(self.cord1(out))
