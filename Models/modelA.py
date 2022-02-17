@@ -35,7 +35,7 @@ class CoordAtt(nn.Module):
 
         #mip = max(8, inp // reduction)
 
-        self.conv1 = nn.Conv2d(inp, inp, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
         self.bn1 = nn.BatchNorm2d(inp)
         self.act = h_swish()
         
@@ -76,7 +76,7 @@ class modelA(nn.Module):
         self.patch_size = param['patch_size']
 
         self.bn1 = nn.BatchNorm2d(self.number_features)
-        self.conv1 = nn.Conv2d(self.number_features, 64, kernel_size=3, stride=1, bias=False)
+        self.conv1 = nn.Conv2d(self.number_features, 64, kernel_size=1, stride=1, bias=False)
         self.cord1 = CoordAtt(64, 64)
         self.bn2 = nn.BatchNorm2d(64)
         self.conv2 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
