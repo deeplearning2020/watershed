@@ -81,11 +81,11 @@ class modelA(nn.Module):
         self.bn2 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, bias=False)
         self.bn3 = nn.BatchNorm2d(16)
-        self.conv3 = nn.Conv2d(16, 16, kernel_size=3, stride=1, bias=False)
+        self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
-        self.bn4 = nn.BatchNorm1d(16*sz*sz)
-        self.fc = nn.Linear(16*sz*sz, self.embed_dim)
+        self.bn4 = nn.BatchNorm1d(8*sz*sz)
+        self.fc = nn.Linear(8*sz*sz, self.embed_dim)
 
     def forward_rep(self, x):
         out = F.relu(self.cord1(self.conv1(self.bn1(x))))
