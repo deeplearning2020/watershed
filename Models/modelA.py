@@ -89,9 +89,9 @@ class modelA(nn.Module):
 
     def forward_rep(self, x):
         out = F.relu(self.conv1(self.bn1(x)))
-        out = F.relu(self.cord1(out))
         out = F.relu(self.conv2(self.bn2(out)))
         out = F.relu(self.conv3(self.bn3(out)))
+        out = F.relu(self.cord1(out))
         out = torch.reshape(out, (len(out), -1))
         out = self.fc(self.bn4(out))
         return out
