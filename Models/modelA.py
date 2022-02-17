@@ -77,9 +77,10 @@ class modelA(nn.Module):
 
         self.bn1 = nn.BatchNorm2d(self.number_features)
         self.conv1 = nn.Conv2d(self.number_features, 32, kernel_size=1, stride=1, bias=False)
-        self.cord1 = CoordAtt(32, 32)
-        self.bn2 = nn.BatchNorm2d(32)
-        self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, bias=False)
+        self.cord1 = CoordAtt(32, 16)
+        self.bn2 = nn.BatchNorm2d(16)
+        self.conv2 = nn.Conv2d(16, 16, kernel_size=3, stride=1, bias=False)
+        self.cord2 = CoordAtt(16, 16)
         self.bn3 = nn.BatchNorm2d(16)
         self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
@@ -89,7 +90,7 @@ class modelA(nn.Module):
 
     def forward_rep(self, x):
         out = F.relu(self.cord1(self.conv1(self.bn1(x))))
-        out = F.relu(self.conv2(self.bn2(out)))
+        out = F.relu(self.cord2(self.conv2(self.bn2(out)))
         out = F.relu(self.conv3(self.bn3(out)))
         #out = F.relu(self.cord1(out))
         out = torch.reshape(out, (len(out), -1))
