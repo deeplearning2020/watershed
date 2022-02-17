@@ -36,7 +36,7 @@ class CoordAtt(nn.Module):
         #mip = max(8, inp // reduction)
 
         self.conv1 = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
-        self.bn1 = nn.BatchNorm2d(mip)
+        self.bn1 = nn.BatchNorm2d(inp)
         self.act = h_swish()
         
         self.conv_h = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
