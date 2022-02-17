@@ -33,14 +33,14 @@ class CoordAtt(nn.Module):
         self.pool_h = nn.AdaptiveAvgPool2d((None, 1))
         self.pool_w = nn.AdaptiveAvgPool2d((1, None))
 
-        mip = max(8, inp // reduction)
+        #mip = max(8, inp // reduction)
 
-        self.conv1 = nn.Conv2d(inp, mip, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
         self.bn1 = nn.BatchNorm2d(mip)
         self.act = h_swish()
         
-        self.conv_h = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
-        self.conv_w = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_h = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_w = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
         
 
     def forward(self, x):
