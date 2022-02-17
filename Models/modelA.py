@@ -77,18 +77,18 @@ class modelA(nn.Module):
 
         self.bn1 = nn.BatchNorm2d(self.number_features)
         self.conv1 = nn.Conv2d(self.number_features, 32, kernel_size=1, stride=1, bias=False)
+        self.cord1 = CoordAtt(32, 32)
         self.bn2 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, bias=False)
         self.bn3 = nn.BatchNorm2d(16)
         self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, bias=False)
-        self.cord1 = CoordAtt(8,8)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
         self.bn4 = nn.BatchNorm1d(16*sz*sz)
         self.fc = nn.Linear(16*sz*sz, self.embed_dim)
 
     def forward_rep(self, x):
-        out = F.relu(self.conv1(self.bn1(x)))
+        out = F.relu(self.conv1(self.cord1(self.bn1(x))))
         out = F.relu(self.conv2(self.bn2(out)))
         out = F.relu(self.conv3(self.bn3(out)))
         out = F.relu(self.cord1(out))
