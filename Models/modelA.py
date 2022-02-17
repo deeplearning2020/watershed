@@ -33,14 +33,14 @@ class CoordAtt(nn.Module):
         self.pool_h = nn.AdaptiveAvgPool2d((None, 1))
         self.pool_w = nn.AdaptiveAvgPool2d((1, None))
 
-        mip = max(8, inp // reduction)
+        #mip = max(8, inp // reduction)
 
-        self.conv1 = nn.Conv2d(inp, mip, kernel_size=1, stride=1, padding=0)
+        self.conv1 = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
         self.bn1 = nn.BatchNorm2d(mip)
         self.act = h_swish()
         
-        self.conv_h = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
-        self.conv_w = nn.Conv2d(mip, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_h = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
+        self.conv_w = nn.Conv2d(inp, oup, kernel_size=1, stride=1, padding=0)
 
        
 
@@ -78,16 +78,16 @@ class modelA(nn.Module):
 
         self.bn1 = nn.BatchNorm2d(self.number_features)
         self.conv1 = nn.Conv2d(self.number_features, 128, kernel_size=1, stride=1, bias=False)
-        self.cord1 = CoordAtt(128, 64)
-        self.bn2 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
-        self.cord2 = CoordAtt(32, 16)
-        self.bn3 = nn.BatchNorm2d(16)
-        self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, bias=False)
+        self.cord1 = CoordAtt(128, 128)
+        self.bn2 = nn.BatchNorm2d(128)
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=1, bias=False)
+        self.cord2 = CoordAtt(64, 64)
+        self.bn3 = nn.BatchNorm2d(64)
+        self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
-        self.bn4 = nn.BatchNorm1d(8*sz*sz)
-        self.fc = nn.Linear(8*sz*sz, self.embed_dim)
+        self.bn4 = nn.BatchNorm1d(32*sz*sz)
+        self.fc = nn.Linear(32*sz*sz, self.embed_dim)
 
     def forward_rep(self, x):
         out = F.relu(self.cord1(self.conv1(self.bn1(x))))
