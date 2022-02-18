@@ -87,11 +87,12 @@ if __name__ == "__main__":
     parser.add_argument("--embed_dim", type=int, help="Embedding Dimension", default=64)
     parser.add_argument("--patch_size", type=int, help="Patch size", default=5)
     parser.add_argument("--semi_supervised", help="To use semi-supervised split", action="store_true")
+    parser.add_argument("--epochs", type=int, help="Number of Epochs", default=20)
     args = parser.parse_args()
     print(args)
 
     param = {}
-    param['n_epochs'] = 20
+    param['n_epochs'] = 50
     param['device'] = torch.device("cuda")
     param['embed_dim'] = args.embed_dim
     if args.semi_supervised:
