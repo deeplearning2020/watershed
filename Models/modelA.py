@@ -198,6 +198,134 @@ class DualGCN(nn.Module):
         out = self.final(torch.cat((spatial_local_feat, g_out), 1))
 
         return out
+        
+class Encoder(nn.Module):
+    def __init__(self, num_layers, d_model, num_heads, dff, dropout=0.1):
+        super().__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.layers = nn.ModuleList([EncoderLayer(d_model, num_heads, dff, dropout)
+                                     for _ in range(num_layers)])
+
+    def forward(self, x, mask):
+        for layer in self.layers:
+            x = layer(x, mask)
+        return x
+        
+class LearnedPosEncoding(nn.Module):
+    def __init__(self, num_pos, d_model, dropout=0.1):
+        super().__init__()
+        self.pos_encoding = nn.Parameter(torch.zeros(1, num_pos, d_model))
+        self.dropout = dropout
+
+    def forward(self, x):
+        out = x + self.pos_encoding
+        out = F.dropout(out, p=self.dropout)
+        return out
+        
+        
+class VGGStem(nn.Module):
+    def __init__(self, d_model):
+        super().__init__()
+        self.d_model = d_model
+        self.layers = self.make_layers()
+
+    def make_layers(self):
+        cfg = [64, 64, 'M', 128, 128, 'M', self.d_model, 'M']
+        layers = []
+        in_channels = 3
+        for x in cfg:
+            if x == 'M':
+                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+            else:
+                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+                           nn.BatchNorm2d(x),
+                           nn.ReLU(inplace=True)]
+                in_channels = x
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.layers(x)
+
+
+class PreActBlock(nn.Module):
+    '''Pre-activation version of the BasicBlock.'''
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1):
+        super(PreActBlock, self).__init__()
+        self.bn1 = nn.BatchNorm2d(in_planes)
+        self.conv1 = nn.Conv2d(
+            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3,
+                               stride=1, padding=1, bias=False)
+
+        if stride != 1 or in_planes != self.expansion*planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, self.expansion*planes,
+                          kernel_size=1, stride=stride, bias=False)
+            )
+
+    def forward(self, x):
+        out = F.relu(self.bn1(x))
+        shortcut = self.shortcut(out) if hasattr(self, 'shortcut') else x
+        out = self.conv1(out)
+        out = self.conv2(F.relu(self.bn2(out)))
+        out += shortcut
+        return out
+
+
+class ResNetStem(nn.Module):
+    def __init__(self, d_model):
+        super().__init__()
+        self.in_planes = 64
+
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
+                               stride=1, padding=1, bias=False)
+        self.layer1 = self.make_layer(PreActBlock, 64, 1, stride=1)
+        self.layer2 = self.make_layer(PreActBlock, 128, 1, stride=2)
+        self.bn = nn.BatchNorm2d(128)
+        self.conv2 = nn.Conv2d(128, d_model, kernel_size=3,
+                               stride=2, padding=1, bias=False)
+
+    def make_layer(self, block, planes, num_blocks, stride):
+        strides = [stride] + [1]*(num_blocks-1)
+        layers = []
+        for stride in strides:
+            layers.append(block(self.in_planes, planes, stride))
+            self.in_planes = planes * block.expansion
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.conv2(F.relu(self.bn(out)))
+        return out
+ 
+class ConViT(nn.Module):
+    def __init__(self, num_layers, d_model, num_heads, dff, dropout=0.1):
+        super().__init__()
+        self.d_model = d_model
+        self.stem = ResNetStem(d_model)
+        self.pos_encoding = LearnedPosEncoding(8*8+1, d_model, dropout)
+        self.encoder = Encoder(num_layers, d_model, num_heads, dff, dropout)
+        self.linear = nn.Linear(d_model, 10)
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, d_model))
+
+    def forward(self, x):
+        N = x.size(0)
+        out = self.stem(x)
+        out = out.reshape(N, self.d_model, -1)  # [N,D,L]
+        out = out.permute(0, 2, 1)  # [N,L,D]
+        cls_tokens = self.cls_token.expand(N, -1, -1)
+        out = torch.cat([cls_tokens, out], dim=1)
+        out = self.pos_encoding(out)
+        out = self.encoder(out, None)
+        out = out[:, 0, :]
+        out = self.linear(out.view(N, -1))
+        return out
 
 
 class modelA(nn.Module):
@@ -217,7 +345,7 @@ class modelA(nn.Module):
         self.cord2 = CoordAtt(64, 64)
         self.graph2 = DualGCN(64)
         self.bn3 = nn.BatchNorm2d(64)
-        self.transformer1 = nn.TransformerEncoderLayer(64, nhead=4, dim_feedforward=2048)
+        self.transformer1 = ConViT(num_layers=2, d_model=64, num_heads=4, dff=1024)
         self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
