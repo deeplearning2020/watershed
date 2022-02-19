@@ -9,6 +9,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import math
+BatchNorm2d = nn.BatchNorm2d
+BatchNorm1d = nn.BatchNorm1d
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class h_sigmoid(nn.Module):
