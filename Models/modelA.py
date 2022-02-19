@@ -198,7 +198,13 @@ class DualGCN(nn.Module):
         out = self.final(torch.cat((spatial_local_feat, g_out), 1))
 
         return out
- 
+def point_wise_feed_forward_network(d_model, dff):
+  return nn.Sequential(
+      nn.Linear(d_model, dff),  # [N,L,dff]
+      nn.ReLU(True),
+      nn.Linear(dff, d_model),  # [N,L,D]
+  )
+  
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super().__init__()
