@@ -281,7 +281,7 @@ class MultiHeadAttention(nn.Module):
         return out, attention_weights
         
  
- class EncoderLayer(nn.Module):
+class EncoderLayer(nn.Module):
     def __init__(self, d_model, num_heads, dff, dropout=0.1):
         super().__init__()
         self.dropout = dropout
