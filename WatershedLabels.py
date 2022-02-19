@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, Subset
 
 import higra as hg
-#from mlpack import emst
+from mlpack import emst
 import scipy as sp
 
 
