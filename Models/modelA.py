@@ -66,7 +66,41 @@ class CoordAtt(nn.Module):
 
         return out
 
+class GraphConv(nn.Module):
+    '''
+    Graph Convolution Layer according to (T. Kipf and M. Welling, ICLR 2017)
+    Additional tricks (power of adjacency matrix and weight self connections) as in the Graph U-Net paper
+    '''
+    def __init__(self,
+                in_features,
+                out_features,
+                activation=None,
+                adj_sq=False,
+                scale_identity=False):
+        super(GraphConv, self).__init__()
+        self.fc = nn.Linear(in_features=in_features, out_features=out_features)
+        self.adj_sq = adj_sq
+        self.activation = activation
+        self.scale_identity = scale_identity
+            
+    def laplacian_batch(self, A):
+        batch, N = A.shape[:2]
+        if self.adj_sq:
+            A = torch.bmm(A, A)  # use A^2 to increase graph connectivity
+        I = torch.eye(N).unsqueeze(0).to(device)
+        if self.scale_identity:
+            I = 2 * I  # increase weight of self connections
+        A_hat = A + I
+        D_hat = (torch.sum(A_hat, 1) + 1e-5) ** (-0.5)
+        L = D_hat.view(batch, N, 1) * A_hat * D_hat.view(batch, 1, N)
+        return L
 
+    def forward(self, data):
+        x, A = data[:2]
+        x = self.fc(torch.bmm(self.laplacian_batch(A), x))
+        if self.activation is not None:
+            x = self.activation(x)
+        return (x, A)
 
 class modelA(nn.Module):
     def __init__(self, **param):
@@ -79,6 +113,7 @@ class modelA(nn.Module):
         self.bn1 = nn.BatchNorm2d(self.number_features)
         self.conv1 = nn.Conv2d(self.number_features, 128, kernel_size=1, stride=1, bias=False)
         self.cord1 = CoordAtt(128, 128)
+        self.graph1 = GraphConv(128,128)
         self.bn2 = nn.BatchNorm2d(128)
         self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=1, bias=False)
         self.cord2 = CoordAtt(64, 64)
@@ -90,7 +125,7 @@ class modelA(nn.Module):
         self.fc = nn.Linear(32*sz*sz, self.embed_dim)
 
     def forward_rep(self, x):
-        out = F.dropout(F.relu(self.cord1(self.conv1(self.bn1(x)))),p=0.2)
+        out = F.dropout(F.relu(self.graph1(self.cord1(self.conv1(self.bn1(x))))),p=0.2)
         out = F.relu(self.cord2(self.conv2(self.bn2(out))))
         out = F.relu(self.conv3(self.bn3(out)))
         #out = F.relu(self.cord1(out))
