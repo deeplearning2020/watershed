@@ -87,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument("--embed_dim", type=int, help="Embedding Dimension", default=64)
     parser.add_argument("--patch_size", type=int, help="Patch size", default=5)
     parser.add_argument("--semi_supervised", help="To use semi-supervised split", action="store_true")
-    parser.add_argument("--epochs", type=int, help="Number of Epochs", default=20)
+    parser.add_argument("--epochs", type=int, help="Number of Epochs")
     args = parser.parse_args()
     print(args)
 
