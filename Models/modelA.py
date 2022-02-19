@@ -317,7 +317,7 @@ class modelA(nn.Module):
         self.bn1 = nn.BatchNorm2d(self.number_features)
         self.conv1 = nn.Conv2d(self.number_features, 128, kernel_size=1, stride=1, bias=False)
         self.cord1 = CoordAtt(128, 128)
-        self.graph1 = GraphConv(32)
+        self.graph1 = GraphConv(128)
         self.bn2 = nn.BatchNorm2d(128)
         self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=1, bias=False)
         self.cord2 = CoordAtt(64, 64)
