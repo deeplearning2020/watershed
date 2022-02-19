@@ -96,7 +96,7 @@ class GCU(Module):
 		torch.nn.init.xavier_uniform(self.variance)
 
 
-		self.iden = torch.eye(self.d).cuda(1)
+		self.iden = torch.eye(self.d)
 		self.iden = torch.cat((self.iden, self.iden))
 		for i in range(int(np.log2(V))):
 			self.iden = torch.cat((self.iden,self.iden), dim=1)
@@ -139,12 +139,12 @@ class GCU(Module):
 	def GraphProject(self,X):
 
 		Adj = torch.cuda.FloatTensor(self.batch, self.no_of_vert,self.no_of_vert)
-		Adj = Adj.cuda(1)
+		#Adj = Adj.cuda(1)
 		Z = torch.cuda.FloatTensor(self.batch,self.d,self.no_of_vert)
-		Z = Z.cuda(1)
+		#Z = Z.cuda(1)
 		Q = torch.cuda.FloatTensor(self.batch, self.ht*self.wdth,self.no_of_vert)
 
-		Q = Q.cuda(1)
+		#Q = Q.cuda(1)
 		#print("Hello",Z.get_device(), Q.get_device())
 		for i in range(self.no_of_vert):
 			q1 = self.W[:,i]
