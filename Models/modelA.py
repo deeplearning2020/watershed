@@ -466,7 +466,7 @@ class modelA(nn.Module):
         self.cord2 = CoordAtt(64, 64)
         self.graph2 = DualGCN(64)
         self.bn3 = nn.BatchNorm2d(64)
-        self.transformer1 = ConViT(num_layers=2, d_model=64, num_heads=4, dff=1024)
+        self.transformer1 = ConViT(num_layers=1, d_model=64, num_heads=4, dff=1024)
         self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
