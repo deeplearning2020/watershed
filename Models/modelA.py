@@ -199,7 +199,7 @@ class DualGCN(nn.Module):
 
         return out
  
- class MultiHeadAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super().__init__()
         self.d_model = d_model
