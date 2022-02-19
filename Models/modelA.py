@@ -217,6 +217,7 @@ class modelA(nn.Module):
         self.cord2 = CoordAtt(64, 64)
         self.graph2 = DualGCN(64)
         self.bn3 = nn.BatchNorm2d(64)
+        self.transformer1 = nn.TransformerEncoderLayer(64, nhead=4, dim_feedforward=2048)
         self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=1, bias=False)
         sz = 2*self.patch_size + 1 - 2*(3-1)
 
@@ -226,7 +227,7 @@ class modelA(nn.Module):
     def forward_rep(self, x):
         out = F.dropout(F.relu(self.graph1(self.cord1(self.conv1(self.bn1(x))))),p=0.3)
         out = F.relu(self.graph2(self.cord2(self.conv2(self.bn2(out)))))
-        out = F.relu(self.conv3(self.bn3(out)))
+        out = F.relu(self.conv3(self.transformer1(self.bn3(out))))
         #out = F.relu(self.cord1(out))
         out = torch.reshape(out, (len(out), -1))
         out = self.fc(self.bn4(out))
